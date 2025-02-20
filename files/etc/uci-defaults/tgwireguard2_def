@@ -1,0 +1,12 @@
+#!/bin/sh
+
+uci -q batch <<-EOF >/dev/null
+	delete ucitrack.@tgwireguard2_def[-1]
+	add ucitrack tgwireguard2
+	set ucitrack.@tgwireguard2[-1].init=tgwireguard2
+	commit ucitrack
+EOF
+
+rm -f /tmp/luci-indexcache
+exit 0
+

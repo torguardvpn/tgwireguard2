@@ -1,0 +1,114 @@
+#!/bin/sh /etc/rc.common
+# TorGuard Wireguard init script
+
+START=10
+STOP=15
+
+USE_PROCD=1
+
+NAME=tgwireguard2
+
+stop_service() {
+    WG_IF="wg"
+    WG_NETWORK="wireguard_${WG_IF}"
+
+    # Remove WireGuard interface
+    uci -q delete network.${WG_IF}
+    uci -q delete network.@${WG_NETWORK}[-1]
+    uci -q del_list firewall.wan.network="${WG_IF}"
+    uci -q del_list firewall.lan.network="${WG_IF}"
+    uci -q commit network
+
+    /etc/init.d/network reload
+    ifdown wan
+    ifup wan
+    ifdown wwan
+    ifup wwan
+    logger -t tgwireguard2 "WireGuard stopped"
+    reload_config
+
+    # Remove cron job
+    crontab -l | grep -v 'tgwireguard2_keepalive' | crontab -
+}
+
+start_service() {
+    WG_IF="wg"
+    WG_NETWORK="wireguard_${WG_IF}"
+    mkdir -p /etc/wireguard
+
+    config_load tgwireguard2_cfg
+
+    # Generate WireGuard keys if not already generated
+    if [ ! -f /etc/wireguard/private.key ]; then
+        wg genkey | tee /etc/wireguard/private.key
+    fi
+    if [ ! -f /etc/wireguard/public.key ]; then
+        cat /etc/wireguard/private.key | wg pubkey | tee /etc/wireguard/public.key
+    fi
+
+    config_get TGWG_USER settings TGWG_USER
+    config_get TGWG_PASS settings TGWG_PASS
+    config_get TGWG_URL settings TGWG_URL
+
+    TGWG_PRIVKEY=$(cat /etc/wireguard/private.key)
+    TGWG_USRPUBKEY=$(cat /etc/wireguard/public.key)
+
+    # Fetch WireGuard config from API
+    logger -t tgwireguard2 "Using TGWG_USER: ${TGWG_USER}"
+    logger -t tgwireguard2 "Using TGWG_PASS: ${TGWG_PASS}"
+    logger -t tgwireguard2 "Using TGWG_URL: ${TGWG_URL}"
+    logger -t tgwireguard2 "Using TGWG_USRPUBKEY: ${TGWG_USRPUBKEY}"
+    logger -t tgwireguard2 "Using curl command: curl --user \"${TGWG_USER}:${TGWG_PASS}\" https://${TGWG_URL}:1443/api/v1/setup?public-key=${TGWG_USRPUBKEY} -k -s"
+
+    if command -v jq >/dev/null 2>&1; then
+        ENCODED_PUBKEY=$(echo -n "${TGWG_USRPUBKEY}" | jq -sRr @uri)
+    else
+        ENCODED_PUBKEY=$(echo -n "${TGWG_USRPUBKEY}" | sed -e 's/+/%2B/g' -e 's/\//%2F/g' -e 's/=/%3D/g')
+    fi
+    logger -t tgwireguard2 "Encoded Public Key: ${ENCODED_PUBKEY}"
+
+    RESPONSE=$(curl --user "${TGWG_USER}:${TGWG_PASS}" "https://${TGWG_URL}:1443/api/v1/setup?public-key=${ENCODED_PUBKEY}" -k -s)
+    logger -t tgwireguard2 "API Response: ${RESPONSE}"
+
+    TGWG_PUBKEY=$(echo $RESPONSE | jsonfilter -e '@.server_public_key')
+    TGWG_ADDR=$(echo $RESPONSE | jsonfilter -e '@.client_ipv4')
+    TGWG_ALLOWEDIP=$(echo $RESPONSE | jsonfilter -e '@.routes')
+    TGWG_ENDHOST=$(echo $RESPONSE | jsonfilter -e '@.vpn_server_address')
+    TGWG_ENDPORT=$(echo $RESPONSE | jsonfilter -e '@.vpn_server_port')
+
+    # Set static WireGuard values
+    TGWG_MTU=1390
+    TGWG_DNS=1.1.1.1
+    TGWG_KEEPALIVE=25
+
+    # Apply WireGuard configuration
+    uci -q delete network.@${WG_NETWORK}[-1]
+    uci -q delete network.${WG_IF}
+    uci -q set network.${WG_IF}=interface
+    uci -q set network.${WG_IF}.proto='wireguard'
+    uci -q set network.${WG_IF}.private_key="${TGWG_PRIVKEY}"
+    uci -q add_list network.${WG_IF}.addresses="${TGWG_ADDR}"
+    uci -q add network ${WG_NETWORK}
+    uci -q set network.@${WG_NETWORK}[-1].public_key="${TGWG_PUBKEY}"
+    uci -q add_list network.@${WG_NETWORK}[-1].allowed_ips="${TGWG_ALLOWEDIP}"
+    uci -q set network.@${WG_NETWORK}[-1].route_allowed_ips="1"
+    uci -q set network.@${WG_NETWORK}[-1].endpoint_host="${TGWG_ENDHOST}"
+    uci -q set network.@${WG_NETWORK}[-1].endpoint_port="${TGWG_ENDPORT}"
+    uci -q set network.@${WG_NETWORK}[-1].persistent_keepalive="${TGWG_KEEPALIVE}"
+    uci -q set network.@${WG_NETWORK}[-1].allowed_ips='0.0.0.0/0'
+
+    # APPLY STATIC VALUES HERE
+    uci -q set network.${WG_IF}.mtu="${TGWG_MTU}"
+    uci -q add_list network.${WG_IF}.dns="${TGWG_DNS}"
+
+    uci -q rename firewall.@zone[0]="lan"
+    uci -q rename firewall.@zone[1]="wan"
+    uci -q del_list firewall.wan.network="${WG_IF}"
+    uci -q add_list firewall.wan.network="${WG_IF}"
+    uci -q commit network
+    uci -q commit firewall
+    reload_config
+
+    # Set up keepalive cron job
+    echo "0 * * * * curl --user '${TGWG_USER}:${TGWG_PASS}' https://${TGWG_ENDHOST}:${TGWG_ENDPORT}/api/v1/setup?public-key=${TGWG_USRPUBKEY} -k -s # tgwireguard2_keepalive" >> /etc/crontabs/root
+}
