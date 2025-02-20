@@ -25,7 +25,7 @@ Follow these steps to build the package from source using the OpenWRT SDK:
 
 2. **Clone the Repository**  
    ```bash
-   git clone https://github.com/TorGuard/tgwireguard2.git
+   git clone https://github.com/torguardvpn/tgwireguard2.git
    ```
 
 3. **Compile the Package**  
@@ -37,7 +37,7 @@ Follow these steps to build the package from source using the OpenWRT SDK:
 4. **Locate the `.ipk` File**  
    After compilation, the `.ipk` package will be found in:  
    ```
-   ~/openwrt/bin/packages/<target_architecture>/base/tgwireguard2.ipk
+   ~/openwrt/bin/packages/<target_architecture>/base/tgwireguard2_2.0.9-r0_all.ipk
    ```
    *(Replace `<target_architecture>` with your OpenWRT device's architecture.)*  
 
@@ -46,7 +46,7 @@ Follow these steps to build the package from source using the OpenWRT SDK:
 ### 🔹 Install Precompiled `.ipk` Package  
 
 #### 📌 Method 1: Upload via OpenWRT Web UI  
-1. **Download the `.ipk` file** from the [GitHub Releases](https://github.com/TorGuard/tgwireguard2/releases).  
+1. **Download the `.ipk` file** from: https://github.com/torguardvpn/tgwireguard2/releases/download/v2.0.9-r0/tgwireguard2_2.0.9-r0_all.ipk  
 2. **Log into OpenWRT Web Interface**.  
 3. Navigate to **System → Software**.  
 4. Click **Upload Package** and select the `.ipk` file.  
@@ -61,8 +61,8 @@ Follow these steps to build the package from source using the OpenWRT SDK:
 2. **Download and Install the Package**  
    ```bash
    cd /tmp
-   wget https://github.com/TorGuard/tgwireguard2/releases/latest/download/torguard-wireguard-openwrt.ipk
-   opkg install tgwireguard2.ipk
+   wget [https://github.com/TorGuard/tgwireguard2/releases/latest/download/torguard-wireguard-openwrt.ipk](https://github.com/torguardvpn/tgwireguard2/releases/download/v2.0.9-r0/tgwireguard2_2.0.9-r0_all.ipk)
+   opkg install tgwireguard2_2.0.9-r0_all.ipk
    ```
 
 ---
@@ -81,7 +81,7 @@ Your connection will remain **active indefinitely**, thanks to **auto cron polli
 ## Support & Updates  
 This OpenWRT app is **officially maintained by TorGuard**.  
 🔗 For support, visit: [TorGuard Support](https://torguard.net/)  
-🚀 Stay updated on releases: [GitHub Releases](https://github.com/TorGuard/tgwireguard2/releases)  
+🚀 Stay updated on releases: ([GitHub Releases](https://github.com/torguardvpn/tgwireguard2/releases/))  
 
 ---
 
