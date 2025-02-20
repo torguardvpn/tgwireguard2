@@ -6,10 +6,10 @@ The **TorGuard WireGuard OpenWRT App** allows users to quickly and easily connec
 ### Features:  
 ✅ **No need to import WireGuard configs** – The app works with TorGuard's WireGuard API.  
 ✅ **Auto cron polling** – Keeps the WireGuard connection alive indefinitely.  
-✅ **Connection Status Display** – Easily check if the VPN is connected or disconnected.
-✅ **RX/TX Traffic Info** – View real-time upload and download traffic statistics for WireGuard.
+✅ **Connection Status Display** – Easily check if the VPN is connected or disconnected.  
+✅ **RX/TX Traffic Info** – View real-time upload and download traffic statistics for WireGuard.  
 ✅ **Seamless OpenWRT integration** – Easily install and manage from the OpenWRT web UI.  
-✅ **Officially maintained by TorGuard** – Regular updates and support.  
+✅ **Officially maintained by TorGuard** – Regular updates and support. 
 
 
 ---
