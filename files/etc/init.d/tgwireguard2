@@ -38,6 +38,13 @@ start_service() {
 
     config_load tgwireguard2_cfg
 
+    # Check if VPN is enabled
+    config_get TGWG_ENABLED settings TGWG_ENABLED
+    if [ "$TGWG_ENABLED" = "no" ]; then
+        logger -t tgwireguard "Wireguard custom VPN is disabled in config. Exiting."
+        exit 0
+    fi
+
     # Generate WireGuard keys if not already generated
     if [ ! -f /etc/wireguard/private.key ]; then
         wg genkey | tee /etc/wireguard/private.key
