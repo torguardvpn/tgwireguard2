@@ -15,5 +15,6 @@ config wgconfig 'settings'
         option TGWG_MTU '1390'
         option TGWG_LISTEN '52957'
         option TG_MODE 'wan'
+	option TGWG_ENABLED 'no'
         option wgconfig '# Paste your WireGuard Config Here'
 
