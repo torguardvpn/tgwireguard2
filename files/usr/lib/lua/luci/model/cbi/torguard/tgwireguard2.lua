@@ -119,6 +119,15 @@ svr:value("us-nj.torguard.com", "USA New Jersey")
 svr:value("us-nj-loc2.torguard.com", "USA New Jersey 2")
 svr:value("us-slc.torguard.com", "USA Salt Lake City")
 
+
+-- Enable WireGuard Option
+enabled_option = s:option(ListValue, "TGWG_ENABLED", "Enable WireGuard")
+enabled_option:value("yes", "Yes")
+enabled_option:value("no", "No")
+enabled_option.default = "no"
+enabled_option.optional = false
+enabled_option.rmempty = false
+
 w = m:section(TypedSection, "wgconfig", "WireGuard VPN Control: Start/Stop WireGuard After Saving Settings")
 
 btnStop = w:option(Button, "_btn_start", translate("Click to Stop WireGuard"))
