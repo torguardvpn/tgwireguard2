@@ -1,7 +1,9 @@
 # TorGuard WireGuard OpenWRT App  
 
 ## Overview  
-The **TorGuard WireGuard OpenWRT App** allows users to quickly and easily connect to any of TorGuard VPN's WireGuard locations. Just enter your **TorGuard username and password**, choose a **server from the dropdown**, and connect instantly.  
+The **TorGuard WireGuard OpenWRT App** allows users to quickly and easily connect to any of TorGuard VPN's WireGuard locations. Just enter your **TorGuard username and password**, choose a **server from the dropdown**, and connect instantly. 
+
+![EasyMesh Screenshot](https://github.com/torguardvpn/luci-app-easymesh/raw/main/images/1740359720850.png)
 
 ### Features:  
 ✅ **No need to import WireGuard configs** – The app works with TorGuard's WireGuard API.  
